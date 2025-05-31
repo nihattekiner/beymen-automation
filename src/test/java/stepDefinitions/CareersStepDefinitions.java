@@ -5,6 +5,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.junit.Assert;
+import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -21,6 +22,10 @@ import steps.BaseSteps;
 import steps.CareersSteps;
 import utils.ClassList;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.Duration;
 
 
@@ -41,6 +46,8 @@ public class CareersStepDefinitions extends BaseSteps {
     String productName;
     String productPrice;
 
+
+
     @Given("the homepage should be displayed")
     public void theHomepageShouldBeDisplayed() {
         baseSteps.waitByMilliSeconds(2000);
@@ -53,16 +60,18 @@ public class CareersStepDefinitions extends BaseSteps {
 
     @When("the user searchs {string} into the search box and clears the search box")
     public void theUserSearchsIntoTheSearchBoxAndClearsTheSearchBox(String text) {
+        //text = utilities.ExcelUtils.getCellData(0, 0); // 1. satır 1. sütun
         baseSteps.clickElement(HomePage.SEARCH_BOX.getLocator());
-        baseSteps.sendKeys(ProductSearchPage.SEARCH_BOX_AFTER_CLICK.getLocator(), text);
+        baseSteps.sendKeys(ProductSearchPage.SEARCH_BOX_AFTER_CLICK.getLocator(), text); // sort
         baseSteps.clickElement(ProductSearchPage.SEARCH_BUTTON.getLocator());
         baseSteps.clickElement(HomePage.SEARCH_BOX.getLocator());
         baseSteps.clickElement(ProductSearchPage.DELETE_BUTTON.getLocator());
     }
 
     @And("the user searchs {string} into the search box and presses the Enter Key")
-    public void theUserSearchsIntoTheSearchBox(String text) {
+    public void theUserSearchsIntoTheSearchBox(String text ) {
         baseSteps.waitByMilliSeconds(3000);
+        //text = utilities.ExcelUtils.getCellData(0, 1); // 1. satır 2. sütun
         baseSteps.sendKeys(ProductSearchPage.SEARCH_BOX_AFTER_CLICK.getLocator(), text + Keys.ENTER); // gomlek
     }
 
@@ -70,11 +79,24 @@ public class CareersStepDefinitions extends BaseSteps {
     @And("a random product from the search results is selected")
     public void aRandomProductFromTheSearchResultsIsSelected() {
         careersSteps.clickRandomProductFromList(ProductSearchPage.SELECT_PRODUCT.getLocator());
-        careersSteps.clickRandomProductFromList(ProductPage.ADD_CART_BUTTON.getLocator());
-        productName = ProductPage.PRODUCT_NAME.getLocator().toString();
-        System.out.println("Product Name : " + productName);
-        productPrice = ProductPage.PRODUCT_PRICE.toString();
-        System.out.println("Product Price : " + productPrice);
+
+        WebElement elementProductName = driver.findElement(By.xpath("//span[@class='o-productDetail__description']"));
+        productName = elementProductName.getText();
+        System.out.println("Product Name: " + productName);
+
+        WebElement elementProductPrice = driver.findElement(By.id("priceNew"));
+        productPrice = elementProductPrice.getText();
+        System.out.println("Product Price: " + productPrice);
+
+        try {
+            FileWriter writer = new FileWriter("product_info.txt");
+            writer.write("Product Name: " + productName + "\n");
+            writer.write("Product Price: " + productPrice + "\n");
+            writer.close();
+            System.out.println("Product information has been written to the file.");
+        } catch (IOException e) {
+            System.out.println("File writing error: " + e.getMessage());
+        }
     }
 
     @And("the selected product is added to the cart")
@@ -110,22 +132,65 @@ public class CareersStepDefinitions extends BaseSteps {
 
     @Then("the product price on the product page should match the price in the cart")
     public void theProductPriceOnTheProductPageShouldMatchThePriceInTheCart() {
-        productPriceBeforeAddToCart = ProductPage.PRODUCT_PRICE.toString();
-        System.out.println("===============================================");
-        System.out.println(productPriceBeforeAddToCart);
+        baseSteps.waitByMilliSeconds(2000);
+        //WebElement elementTotalPriceInCart = driver.findElement(By.id("priceNew"));
+        //productTotalPriceInCart = elementTotalPriceInCart.getText();
+        //System.out.println("Product Name: " + productName);
+        // Dosyadan Product Price bilgisini oku
+        String priceFromFile = "";
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader("product_info.txt"));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("Product Price: ")) {
+                    priceFromFile = line.replace("Product Price: ", "").trim();
+                    break;
+                }
+            }
+            reader.close();
+        } catch (IOException e) {
+            System.out.println("File reading error: " + e.getMessage());
+        }
+
+        System.out.println("Price from file: " + priceFromFile);
 
         baseSteps.clickElement(ProductPage.CART_BUTTON.getLocator());
-        productTotalPriceInCart = CartPage.CART_TOTAL_PRICE.toString();
-        System.out.println("===============================================");
-        System.out.println(productTotalPriceInCart);
-        Assert.assertEquals(productPriceBeforeAddToCart,productTotalPriceInCart);
+
+        baseSteps.waitByMilliSeconds(2000);
+        WebElement elementProductPrice = driver.findElement(By.xpath("(//span[contains(@class,'Summary__value')])[3]"));
+        productTotalPriceInCart = elementProductPrice.getText();
+        System.out.println("Product Price: " + productTotalPriceInCart);
+
+        priceFromFile = priceFromFile.replaceAll("[\\s\\u00A0]", "")  // Boşlukları sil
+                .replace("TL", "")
+                .replace(",", ".");              // Opsiyonel, eğer nokta olmalıysa
+
+        productTotalPriceInCart = productTotalPriceInCart.replaceAll("[\\s\\u00A0]", "")
+                .replace("TL", "")
+                .replace(",", ".");                // Opsiyonel
+
+        priceFromFile = priceFromFile.replaceAll("\\.00$", "");
+        productTotalPriceInCart = productTotalPriceInCart.replaceAll("\\.00$", "");
+
+        Assert.assertEquals(priceFromFile, productTotalPriceInCart);
+
+
+        //productPriceBeforeAddToCart = ProductPage.PRODUCT_PRICE.toString();
+        //System.out.println("===============================================");
+        //System.out.println(productPriceBeforeAddToCart);
+
+        //baseSteps.clickElement(ProductPage.CART_BUTTON.getLocator());
+        //productTotalPriceInCart = CartPage.CART_TOTAL_PRICE.toString();
+        //System.out.println("===============================================");
+        //System.out.println(productTotalPriceInCart);
+
     }
 
     @When("the product quantity is increased to {int}")
     public void theProductQuantityIsIncreasedTo(int arg0) {
         pieceDropdown = driver.findElement(CartPage.PRODUCT_PIECE.getLocator());
         selectPiece = new Select(pieceDropdown);
-        selectPiece.selectByIndex(2);
+        selectPiece.selectByIndex(1);
 
 
     }
