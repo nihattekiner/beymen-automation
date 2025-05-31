@@ -1,7 +1,7 @@
 package steps;
 
 import io.cucumber.datatable.DataTable;
-import pages.web.HomePage;
+import pages.web.Page;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,14 +27,14 @@ public class HomePageSteps extends BaseSteps {
 
     public void clickCompanyButton() {
         logger.info("Entered.");
-        clickElement(HomePage.COMPANY_BUTTON.getLocator());
+        clickElement(Page.COMPANY_BUTTON.getLocator());
         logger.info("The button was clicked successfully.");
     }
 
 
     public void clickCareersButton() {
         logger.info("Entered.");
-        clickElement(HomePage.CAREERS_BUTTON.getLocator());
+        clickElement(Page.CAREERS_BUTTON.getLocator());
         logger.info("The button was clicked successfully.");
     }
 }

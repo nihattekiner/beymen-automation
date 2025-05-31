@@ -8,22 +8,17 @@ Feature:Insider UI Test Case
   @Deneme
   Scenario: Search and cart operations on Beymen
 
-    * Home Page, Send Keys, Urun Ara: "şort"
-    * Kullanıcı "gömlek" arar ve rastgele bir ürünü seçer
-    #Given the user navigates to "https://www.beymen.com"
-    #Then the homepage should be displayed
-    #When the user enters the keyword from Excel row 1 column 1 ("şort") into the search box
-    #And the user clears the search box
-    #And the user enters the keyword from Excel row 1 column 2 ("gömlek") into the search box
-    #And the user presses the Enter key
-    #And a random product from the search results is selected
-    #And the selected product's information and price are written to a text file
-    #And the selected product is added to the cart
-    #Then the product price on the product page should match the price in the cart
-    #When the product quantity is increased to 2
-    #Then the product quantity should be 2 in the cart
-    #When the product is removed from the cart
-    #Then the cart should be empty
+    Given the homepage should be displayed
+    When the user searchs "şort" into the search box and clears the search box
+    And the user searchs "gömlek" into the search box and presses the Enter Key
+    And a random product from the search results is selected
+    And the selected product is added to the cart
+    Then the product price on the product page should match the price in the cart
+    When the product quantity is increased to 2
+    Then the product quantity should be 2 in the cart
+    When the product is removed from the cart
+    Then the cart should be empty
+
 
 
   #www.beymen.com sitesi açılır.

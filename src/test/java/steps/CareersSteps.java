@@ -4,14 +4,10 @@ import base.BaseTest;
 import io.cucumber.datatable.DataTable;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-import pages.web.CareersPage;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
-import static pages.web.CareersPage.*;
 
 public class CareersSteps extends BaseSteps {
 
@@ -29,6 +25,8 @@ public class CareersSteps extends BaseSteps {
             }
         }
     }
+
+
 
     public void selectDropDown(String text, By by) {
         logger.info("Entered.");

@@ -1,22 +1,22 @@
 package stepDefinitions;
 
-import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.junit.Assert;
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pages.commen.BaseElement;
-import pages.web.CareersPage;
+import pages.web.CartPage;
+import pages.web.HomePage;
+import pages.web.ProductPage;
+import pages.web.ProductSearchPage;
 import steps.BaseSteps;
 import steps.CareersSteps;
 import utils.ClassList;
@@ -31,47 +31,60 @@ public class CareersStepDefinitions extends BaseSteps {
     public final CareersSteps careersSteps = ClassList.getInstance().get(CareersSteps.class);
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
+    String title;
+
     String productPriceBeforeAddToCart;
     String productTotalPriceInCart;
     WebElement pieceDropdown;
     Select selectPiece;
     String emptyCartText;
-    String title;
+    String productName;
+    String productPrice;
 
-
-    @Given("Home Page, Send Keys, Urun Ara: {string}")
-    public void sendKeysUrunAra(String text) {
-
+    @Given("the homepage should be displayed")
+    public void theHomepageShouldBeDisplayed() {
         baseSteps.waitByMilliSeconds(2000);
-        baseSteps.clickElement(CareersPage.CEREZ_REJECT.getLocator());
-        baseSteps.clickElement(CareersPage.CHOOSE_GENDER_CLOSE.getLocator());
-        System.out.println("------------------------------------------------------------------------------------------------");
+        baseSteps.clickElement(HomePage.CEREZ_REJECT.getLocator());
+        baseSteps.clickElement(HomePage.CHOOSE_GENDER_CLOSE.getLocator());
         System.out.println(driver.getTitle());
         title = "Beymen.com – Türkiye’nin Tek Dijital Lüks Platformu";
-        //Assert.assertEquals(title,driver.getTitle());
-
-        baseSteps.clickElement(CareersPage.SEARCH_BOX.getLocator());
-        baseSteps.sendKeys(CareersPage.SEARCH_BOX.getLocator(), text); // sort
-        baseSteps.clickElement(CareersPage.SEARCH_BUTTON.getLocator());
-        baseSteps.clickElement(CareersPage.DELETE_BUTTON.getLocator());
-        //WebElement searchBox = driver.findElement(By.xpath("//div[contains(@class,'o-header__search--wrapper')]//input"));
-        //searchBox.sendKeys("şort");
-        //searchBox.sendKeys(Keys.ENTER); // Enter tuşu da gönderebilirsin
-
+        Assert.assertEquals(title,driver.getTitle());
     }
-    @Then("Kullanıcı {string} arar ve rastgele bir ürünü seçer")
-    public void selectUrun(String text) {
-        baseSteps.waitByMilliSeconds(3000);
-        baseSteps.sendKeys(CareersPage.SEARCH_BOX.getLocator(), text + Keys.ENTER); // gomlek
-        careersSteps.clickRandomProductFromList(CareersPage.SELECT_PRODUCT.getLocator());
-        careersSteps.clickRandomProductFromList(CareersPage.ADD_CART_BUTTON.getLocator());
 
+    @When("the user searchs {string} into the search box and clears the search box")
+    public void theUserSearchsIntoTheSearchBoxAndClearsTheSearchBox(String text) {
+        baseSteps.clickElement(HomePage.SEARCH_BOX.getLocator());
+        baseSteps.sendKeys(ProductSearchPage.SEARCH_BOX_AFTER_CLICK.getLocator(), text);
+        baseSteps.clickElement(ProductSearchPage.SEARCH_BUTTON.getLocator());
+        baseSteps.clickElement(HomePage.SEARCH_BOX.getLocator());
+        baseSteps.clickElement(ProductSearchPage.DELETE_BUTTON.getLocator());
+    }
+
+    @And("the user searchs {string} into the search box and presses the Enter Key")
+    public void theUserSearchsIntoTheSearchBox(String text) {
+        baseSteps.waitByMilliSeconds(3000);
+        baseSteps.sendKeys(ProductSearchPage.SEARCH_BOX_AFTER_CLICK.getLocator(), text + Keys.ENTER); // gomlek
+    }
+
+
+    @And("a random product from the search results is selected")
+    public void aRandomProductFromTheSearchResultsIsSelected() {
+        careersSteps.clickRandomProductFromList(ProductSearchPage.SELECT_PRODUCT.getLocator());
+        careersSteps.clickRandomProductFromList(ProductPage.ADD_CART_BUTTON.getLocator());
+        productName = ProductPage.PRODUCT_NAME.getLocator().toString();
+        System.out.println("Product Name : " + productName);
+        productPrice = ProductPage.PRODUCT_PRICE.toString();
+        System.out.println("Product Price : " + productPrice);
+    }
+
+    @And("the selected product is added to the cart")
+    public void theSelectedProductIsAddedToTheCart() {
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
         BaseElement[] sizes = {
-                CareersPage.CHOOSE_SIZE_SMALL,
-                CareersPage.CHOOSE_SIZE_MEDIUM,
-                CareersPage.CHOOSE_SIZE_LARGE,
-                CareersPage.CHOOSE_SIZE_XLARGE
+                ProductPage.CHOOSE_SIZE_SMALL,
+                ProductPage.CHOOSE_SIZE_MEDIUM,
+                ProductPage.CHOOSE_SIZE_LARGE,
+                ProductPage.CHOOSE_SIZE_XLARGE
         };
 
         boolean sizeSelected = false;
@@ -91,29 +104,74 @@ public class CareersStepDefinitions extends BaseSteps {
         if (!sizeSelected) {
             System.out.println("No size could be chosen!");
         }
+        baseSteps.waitByMilliSeconds(2000);
+        baseSteps.clickElement(ProductPage.ADD_CART.getLocator());
+    }
 
-        baseSteps.clickElement(CareersPage.ADD_CART.getLocator());
-        productPriceBeforeAddToCart = CareersPage.PRODUCT_PRICE.getLocator().toString();
+    @Then("the product price on the product page should match the price in the cart")
+    public void theProductPriceOnTheProductPageShouldMatchThePriceInTheCart() {
+        productPriceBeforeAddToCart = ProductPage.PRODUCT_PRICE.toString();
+        System.out.println("===============================================");
+        System.out.println(productPriceBeforeAddToCart);
 
-        baseSteps.clickElement(CareersPage.CART_BUTTON.getLocator());
-        productTotalPriceInCart = CareersPage.CART_TOTAL_PRICE.getLocator().toString();
-
+        baseSteps.clickElement(ProductPage.CART_BUTTON.getLocator());
+        productTotalPriceInCart = CartPage.CART_TOTAL_PRICE.toString();
+        System.out.println("===============================================");
+        System.out.println(productTotalPriceInCart);
         Assert.assertEquals(productPriceBeforeAddToCart,productTotalPriceInCart);
+    }
 
-        pieceDropdown = driver.findElement(CareersPage.PRODUCT_PIECE.getLocator());
+    @When("the product quantity is increased to {int}")
+    public void theProductQuantityIsIncreasedTo(int arg0) {
+        pieceDropdown = driver.findElement(CartPage.PRODUCT_PIECE.getLocator());
         selectPiece = new Select(pieceDropdown);
         selectPiece.selectByIndex(2);
 
-        String piece = "2 Adet";
-        Assert.assertEquals(piece,productTotalPriceInCart);
-
-        baseSteps.clickElement(CareersPage.DELETE_PRODUCTS.getLocator());
-        emptyCartText = "Sepetinizde Ürün Bulunmamaktadır";
-        Assert.assertEquals(emptyCartText,CareersPage.EMPTY_CART.toString());
 
     }
 
+    @Then("the product quantity should be {int} in the cart")
+    public void theProductQuantityShouldBeInTheCart(int arg0) {
+        String piece = "2 Adet";
+        Assert.assertEquals(piece,productTotalPriceInCart);
+    }
 
+    @When("the product is removed from the cart")
+    public void theProductIsRemovedFromTheCart() {
+        baseSteps.clickElement(CartPage.DELETE_PRODUCTS.getLocator());
+    }
 
-
+    @Then("the cart should be empty")
+    public void theCartShouldBeEmpty() {
+        emptyCartText = "Sepetinizde Ürün Bulunmamaktadır";
+        Assert.assertEquals(emptyCartText, CartPage.EMPTY_CART.toString());
+    }
 }
+
+/*
+    @When("rastgele bir ürüne tıklar: {int}")
+    public void rastgeleBirUrunTiklarIndexIle(int index) {
+        List<WebElement> products = baseSteps.findElements(CareersPage.SELECT_PRODUCT.getLocator());
+
+        if (products == null || products.isEmpty()) {
+            throw new RuntimeException("Ürün listesi boş!");
+        }
+        if (index < 0 || index >= products.size()) {
+            throw new IndexOutOfBoundsException("Geçersiz ürün indexi: " + index);
+        }
+        WebElement selectedProduct = products.get(index);
+        System.out.println("Tıklanacak ürün indexi: " + index + " | Ürün içeriği: " + selectedProduct.getText());
+        try {
+            selectedProduct.click();
+            waitForTheElement(CareersPage.PRODUCT_PRICE.getLocator());
+            String price = String.valueOf(findElement(CareersPage.PRODUCT_PRICE.getLocator()));
+            ScenarioContext.set("URUN_FIYAT", price);
+            System.out.println("ürünün fiyat: " + price);
+        } catch (Exception e) {
+            throw new RuntimeException("Ürüne tıklanamadı: " + e.getMessage());
+        }
+
+    } */
+
+
+
