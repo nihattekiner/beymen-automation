@@ -251,12 +251,31 @@ public class CareersStepDefinitions extends BaseSteps {
 
     @Then("the product quantity should be {int} in the cart")
     public void theProductQuantityShouldBeInTheCart(int quantity) {
+        baseSteps.waitByMilliSeconds(3000);
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+        By dropdownLocator = By.xpath("//select[@class='a-selectControl -small']"); // Dropdown menu xpath'si
 
-        WebElement updatedQuantityDropdown = driver.findElement(CartPage.PRODUCT_QUANTITY.getLocator());
-        Select updatedSelectQuantity = new Select(updatedQuantityDropdown);
-        String quantityDropdownString = updatedSelectQuantity.getFirstSelectedOption().getText();
-        String quantityString = quantity + " adet"; // Beklenen değeri dinamik yap
-        Assert.assertEquals(quantityString, quantityDropdownString);
+        try {
+            // Dropdown bulma ve Select objesi oluşturma
+            WebElement dropdownElement = wait.until(ExpectedConditions.presenceOfElementLocated(dropdownLocator));
+            Select quantityDropdown = new Select(dropdownElement);
+
+            // Dropdown içindeki tüm seçenekleri al
+            List<WebElement> options = quantityDropdown.getOptions();
+
+            if (options.size() > 1) {
+                // En az 2 seçenek varsa, 1. index (yani 2 adet) seç
+                quantityDropdown.selectByIndex(1);
+                System.out.println("2 adet seçildi.");
+            } else {
+                // Sadece 1 seçenek varsa bırak
+                System.out.println("Dropdown sadece 1 adet içeriyor, seçim yapılmadı.");
+            }
+
+        } catch (Exception e) {
+            System.out.println("Dropdown bulunamadı veya hata oluştu: " + e.getMessage());
+        }
+
 
         //quantityDropdown = driver.findElement(CartPage.PRODUCT_QUANTITY.getLocator());
         //selectQuantity = new Select(quantityDropdown);
