@@ -1,9 +1,28 @@
-Feature: Trello API Tests
+Feature: Trello API Testleri
 
-  Scenario: Managing a board and cards on Trello
-    Given The user sets up the Trello API key and token
-    When The user creates a new board
-    And The user creates two new cards on the board
-    And The user randomly updates one of the cards
-    And The user deletes all created cards
-    Then The user deletes the created board
+  Scenario: Trello board oluştur
+    Given Trello API için board oluşturma isteği hazırlanır
+    When Board oluşturma isteği gönderilir
+    Then Board başarıyla oluşturulur ve board ID kaydedilir
+
+  Scenario: Board'a iki kart ekle
+    Given Trello board ID ile kart oluşturma isteği hazırlanır
+    When Birinci kart için POST isteği gönderilir
+    Then Birinci kart başarıyla oluşturulur ve kart ID kaydedilir
+    When İkinci kart için POST isteği gönderilir
+    Then İkinci kart başarıyla oluşturulur ve kart ID kaydedilir
+
+  Scenario: Rastgele seçilen bir kart güncelle
+    Given Rastgele seçilen bir kart için güncelleme isteği hazırlanır
+    When Kart güncelleme isteği gönderilir
+    Then Kart başarıyla güncellenir
+
+  Scenario: Oluşturulan kartları sil
+    Given Silinecek kartlar için DELETE isteği hazırlanır
+    When Kartlar için silme isteği gönderilir
+    Then Kartlar başarıyla silinir
+
+  Scenario: Oluşturulan board'u sil
+    Given Silinecek board için DELETE isteği hazırlanır
+    When Board silme isteği gönderilir
+    Then Board başarıyla silinir
