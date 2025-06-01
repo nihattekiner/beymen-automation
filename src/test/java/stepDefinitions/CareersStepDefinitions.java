@@ -124,12 +124,12 @@ public class CareersStepDefinitions extends BaseSteps {
                 baseSteps.clickElement(ProductPage.ADD_CART.getLocator());
                 System.out.println("Sepete ekleme tıklandı.");
 
-                // Sepete git (ör: sepete git butonunun locator'ı)
+                // Sepete git
                 baseSteps.clickElement(ProductPage.CART_BUTTON.getLocator());
                 System.out.println("Sepete gidildi.");
 
                 // Sepette boş yazısını kontrol et
-                Thread.sleep(2000); // Sepet yüklenmesini beklemek için, wait kullanabilirsin
+                Thread.sleep(2000);
                 List<WebElement> emptyCartElements = driver.findElements(By.xpath("//strong[contains(text(),'Sepetinizde Ürün Bulunmamaktadır')]"));
                 if (emptyCartElements.isEmpty()) {
                     // Ürün var, döngüyü kır
@@ -137,8 +137,8 @@ public class CareersStepDefinitions extends BaseSteps {
                     productAdded = true;
                     break;
                 } else {
-                    // Sepet boş, geri git (ör: tarayıcı geri)
-                    driver.navigate().back();  // veya baseSteps.goBack(); varsa onu kullan
+                    // Sepet boş, geri git (tarayıcı geri)
+                    driver.navigate().back();  //
                     System.out.println("Sepet boş, geri dönüldü.");
                 }
             } catch (Exception e) {
@@ -151,35 +151,6 @@ public class CareersStepDefinitions extends BaseSteps {
             System.out.println("Hiçbir beden eklenemedi.");
         } else {
             System.out.println("Başarılı şekilde ürün sepete eklendi.");
-            // Buradan sonra diğer adımlara geçebilirsin
-
-        /*
-        for (BaseElement size : sizes) {
-            try {
-                wait.until(ExpectedConditions.presenceOfElementLocated(size.getLocator()));
-                WebElement sizeElement = driver.findElement(size.getLocator());
-                if (sizeElement.isDisplayed() && sizeElement.isEnabled()) {
-                    sizeElement.click();
-                    //System.out.println("Seçilen beden: " + size.getLocator().toString());
-                    sizeSelected = true;
-                    break;
-                } else {
-                    System.out.println("Beden bulunuyor ama tıklanamaz: " + size.getLocator().toString());
-                }
-            } catch (Exception e) {
-                System.out.println("Beden bulunamadı: " + size.getLocator().toString());
-            }
-        }
-
-        if (sizeSelected) {
-            baseSteps.waitByMilliSeconds(2000);
-            baseSteps.clickElement(ProductPage.ADD_CART.getLocator());
-        } else {
-            System.out.println("Sepete eklenemedi, uygun beden bulunamadı.");
-        }
-
-         */
-
         }
     }
 
@@ -244,8 +215,6 @@ public class CareersStepDefinitions extends BaseSteps {
             System.out.println("İstenilen adet (" + quantity + ") mevcut değil. Mevcut adet: " + availableOptions +
                     ". Adet artırılamadı, işlem mevcut adet ile devam ediyor.");
         }
-        //selectQuantity = new Select(quantityDropdown);
-        //selectQuantity.selectByIndex(quantity-1);
     }
 
     @Then("the product quantity should be {int} in the cart")
@@ -259,40 +228,6 @@ public class CareersStepDefinitions extends BaseSteps {
         Select select = new Select(baseSteps.findElement(CartPage.QUANTITY.getLocator()));
         String text = "2 adet";
         select.selectByVisibleText(text);
-
-
-        /*
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
-        By dropdownLocator = By.xpath("//select[@class='a-selectControl -small']"); // Dropdown menu xpath'si
-
-        try {
-            // Dropdown bulma ve Select objesi oluşturma
-            WebElement dropdownElement = wait.until(ExpectedConditions.presenceOfElementLocated(dropdownLocator));
-            Select quantityDropdown = new Select(dropdownElement);
-
-            // Dropdown içindeki tüm seçenekleri al
-            List<WebElement> options = quantityDropdown.getOptions();
-
-            if (options.size() > 1) {
-                // En az 2 seçenek varsa, 1. index (yani 2 adet) seç
-                quantityDropdown.selectByIndex(1);
-                System.out.println("2 adet seçildi.");
-            } else {
-                // Sadece 1 seçenek varsa bırak
-                System.out.println("Dropdown sadece 1 adet içeriyor, seçim yapılmadı.");
-            }
-
-        } catch (Exception e) {
-            System.out.println("Dropdown bulunamadı veya hata oluştu: " + e.getMessage());
-        }
-            */
-
-        //quantityDropdown = driver.findElement(CartPage.PRODUCT_QUANTITY.getLocator());
-        //selectQuantity = new Select(quantityDropdown);
-        //baseSteps.waitByMilliSeconds(2000);
-        //String quantityDropdownString = selectQuantity.getFirstSelectedOption().getText();
-        //quantityString = "2 adet";
-        //Assert.assertEquals(quantityString,quantityDropdownString);
     }
 
     @When("the product is removed from the cart")
@@ -309,39 +244,11 @@ public class CareersStepDefinitions extends BaseSteps {
 
         waitElement = By.xpath("//strong[contains(text(),'Sepetinizde Ürün Bulunmamaktadır')]");
         baseSteps.waitForTheElement(waitElement);
-        //WebElement elementEmptyCartText = driver.findElement(waitElement);
         WebElement elementEmptyCartText = driver.findElement(By.xpath("//strong[contains(text(),'Sepetinizde Ürün Bulunmamaktadır')]"));
         String emptyCartTextInPage = elementEmptyCartText.getText();
-        //String emptyCartTextInPage = baseSteps.getElementText(CartPage.EMPTY_CART.getLocator());
         System.out.println("Empty Cart Text: " + emptyCartTextInPage);
         Assert.assertEquals(emptyCartText, emptyCartTextInPage);
     }
 }
-
-/*
-    @When("rastgele bir ürüne tıklar: {int}")
-    public void rastgeleBirUrunTiklarIndexIle(int index) {
-        List<WebElement> products = baseSteps.findElements(CareersPage.SELECT_PRODUCT.getLocator());
-
-        if (products == null || products.isEmpty()) {
-            throw new RuntimeException("Ürün listesi boş!");
-        }
-        if (index < 0 || index >= products.size()) {
-            throw new IndexOutOfBoundsException("Geçersiz ürün indexi: " + index);
-        }
-        WebElement selectedProduct = products.get(index);
-        System.out.println("Tıklanacak ürün indexi: " + index + " | Ürün içeriği: " + selectedProduct.getText());
-        try {
-            selectedProduct.click();
-            waitForTheElement(CareersPage.PRODUCT_PRICE.getLocator());
-            String price = String.valueOf(findElement(CareersPage.PRODUCT_PRICE.getLocator()));
-            ScenarioContext.set("URUN_FIYAT", price);
-            System.out.println("ürünün fiyat: " + price);
-        } catch (Exception e) {
-            throw new RuntimeException("Ürüne tıklanamadı: " + e.getMessage());
-        }
-
-    } */
-
 
 
