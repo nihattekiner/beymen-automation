@@ -37,15 +37,15 @@ public class CareersStepDefinitions extends BaseSteps {
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
     String title;
-
     String productPriceBeforeAddToCart;
     String productTotalPriceInCart;
-    WebElement pieceDropdown;
-    Select selectPiece;
+    WebElement quantityDropdown;
+    Select selectQuantity;
     String emptyCartText;
     String productName;
     String productPrice;
-
+    String quantityString;
+    By waitElement;
 
 
     @Given("the homepage should be displayed")
@@ -53,7 +53,7 @@ public class CareersStepDefinitions extends BaseSteps {
         baseSteps.waitByMilliSeconds(2000);
         baseSteps.clickElement(HomePage.CEREZ_REJECT.getLocator());
         baseSteps.clickElement(HomePage.CHOOSE_GENDER_CLOSE.getLocator());
-        System.out.println(driver.getTitle());
+        System.out.println("Page Title: " + driver.getTitle());
         title = "Beymen.com – Türkiye’nin Tek Dijital Lüks Platformu";
         Assert.assertEquals(title,driver.getTitle());
     }
@@ -70,7 +70,7 @@ public class CareersStepDefinitions extends BaseSteps {
 
     @And("the user searchs {string} into the search box and presses the Enter Key")
     public void theUserSearchsIntoTheSearchBox(String text ) {
-        baseSteps.waitByMilliSeconds(3000);
+        baseSteps.waitByMilliSeconds(2000);
         //text = utilities.ExcelUtils.getCellData(0, 1); // 1. satır 2. sütun
         baseSteps.sendKeys(ProductSearchPage.SEARCH_BOX_AFTER_CLICK.getLocator(), text + Keys.ENTER); // gomlek
     }
@@ -115,7 +115,7 @@ public class CareersStepDefinitions extends BaseSteps {
             try {
                 wait.until(ExpectedConditions.elementToBeClickable(size.getLocator()));
                 driver.findElement(size.getLocator()).click();
-                System.out.println("Chosen Size: " + size.getLocator().toString());
+                //System.out.println("Chosen Size: " + size.getLocator().toString());
                 sizeSelected = true;
                 break;
             } catch (Exception e) {
@@ -156,8 +156,11 @@ public class CareersStepDefinitions extends BaseSteps {
 
         baseSteps.clickElement(ProductPage.CART_BUTTON.getLocator());
 
-        baseSteps.waitByMilliSeconds(2000);
-        WebElement elementProductPrice = driver.findElement(By.xpath("(//span[contains(@class,'Summary__value')])[3]"));
+        baseSteps.waitByMilliSeconds(1000);
+        By priceLocator = By.xpath("(//span[contains(@class,'Summary__value')])[1]");
+        baseSteps.waitForTheElement(priceLocator);
+        WebElement elementProductPrice = driver.findElement(priceLocator);
+        //    WebElement elementProductPrice = driver.findElement(By.xpath("(//span[contains(@class,'Summary__value')])[1]"));
         productTotalPriceInCart = elementProductPrice.getText();
         System.out.println("Product Price: " + productTotalPriceInCart);
 
@@ -173,43 +176,43 @@ public class CareersStepDefinitions extends BaseSteps {
         productTotalPriceInCart = productTotalPriceInCart.replaceAll("\\.00$", "");
 
         Assert.assertEquals(priceFromFile, productTotalPriceInCart);
-
-
-        //productPriceBeforeAddToCart = ProductPage.PRODUCT_PRICE.toString();
-        //System.out.println("===============================================");
-        //System.out.println(productPriceBeforeAddToCart);
-
-        //baseSteps.clickElement(ProductPage.CART_BUTTON.getLocator());
-        //productTotalPriceInCart = CartPage.CART_TOTAL_PRICE.toString();
-        //System.out.println("===============================================");
-        //System.out.println(productTotalPriceInCart);
-
     }
 
     @When("the product quantity is increased to {int}")
-    public void theProductQuantityIsIncreasedTo(int arg0) {
-        pieceDropdown = driver.findElement(CartPage.PRODUCT_PIECE.getLocator());
-        selectPiece = new Select(pieceDropdown);
-        selectPiece.selectByIndex(1);
-
-
+    public void theProductQuantityIsIncreasedTo(int quantity) {
+        quantityDropdown = driver.findElement(CartPage.PRODUCT_QUANTITY.getLocator());
+        selectQuantity = new Select(quantityDropdown);
+        selectQuantity.selectByIndex(quantity-1);
     }
 
     @Then("the product quantity should be {int} in the cart")
-    public void theProductQuantityShouldBeInTheCart(int arg0) {
-        String piece = "2 Adet";
-        Assert.assertEquals(piece,productTotalPriceInCart);
+    public void theProductQuantityShouldBeInTheCart(int quantity) {
+        selectQuantity = new Select(quantityDropdown);
+        String quantityDropdownString = selectQuantity.getFirstSelectedOption().getText();
+        quantityString = "2 adet";
+        Assert.assertEquals(quantityString,quantityDropdownString);
     }
 
     @When("the product is removed from the cart")
     public void theProductIsRemovedFromTheCart() {
+        baseSteps.waitByMilliSeconds(3000);
+        waitElement = CartPage.DELETE_PRODUCTS.getLocator();
+        baseSteps.waitForTheElement(waitElement);
         baseSteps.clickElement(CartPage.DELETE_PRODUCTS.getLocator());
     }
 
     @Then("the cart should be empty")
     public void theCartShouldBeEmpty() {
-        emptyCartText = "Sepetinizde Ürün Bulunmamaktadır";
-        Assert.assertEquals(emptyCartText, CartPage.EMPTY_CART.toString());
+        emptyCartText = "SEPETINIZDE ÜRÜN BULUNMAMAKTADIR";
+
+        waitElement = By.xpath("//strong[contains(text(),'Sepetinizde Ürün Bulunmamaktadır')]");
+        baseSteps.waitForTheElement(waitElement);
+        //WebElement elementEmptyCartText = driver.findElement(waitElement);
+        WebElement elementEmptyCartText = driver.findElement(By.xpath("//strong[contains(text(),'Sepetinizde Ürün Bulunmamaktadır')]"));
+        String emptyCartTextInPage = elementEmptyCartText.getText();
+        //String emptyCartTextInPage = baseSteps.getElementText(CartPage.EMPTY_CART.getLocator());
+        System.out.println("Empty Cart Text: " + emptyCartTextInPage);
+        Assert.assertEquals(emptyCartText, emptyCartTextInPage);
     }
 }
 

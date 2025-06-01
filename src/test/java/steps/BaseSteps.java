@@ -29,6 +29,11 @@ public class BaseSteps {
         ClassList.getInstance().put(this);
     }
 
+    public String getElementText(By locator) {
+        WebElement element = driver.findElement(locator);
+        return element.getText();
+    }
+
     public WebElement findElement(By infoParam) {
         logger.info("Entered. Parameters; infoParam: {}", infoParam);
         WebDriverWait webDriverWait = new WebDriverWait(driver, Duration.ofSeconds(60));
