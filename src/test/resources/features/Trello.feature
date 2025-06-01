@@ -1,28 +1,21 @@
-Feature: Trello API Testleri
+Feature: Trello API Tests
 
-  Scenario: Trello board oluştur
-    Given Trello API için board oluşturma isteği hazırlanır
-    When Board oluşturma isteği gönderilir
-    Then Board başarıyla oluşturulur ve board ID kaydedilir
+  @Deneme
+  Scenario: Create a Trello board
+    Given The board creation request is prepared and sent successfully
 
-  Scenario: Board'a iki kart ekle
-    Given Trello board ID ile kart oluşturma isteği hazırlanır
-    When Birinci kart için POST isteği gönderilir
-    Then Birinci kart başarıyla oluşturulur ve kart ID kaydedilir
-    When İkinci kart için POST isteği gönderilir
-    Then İkinci kart başarıyla oluşturulur ve kart ID kaydedilir
+  @Deneme
+  Scenario: Add two cards to the board
+    Given Two cards are created successfully on the board
 
-  Scenario: Rastgele seçilen bir kart güncelle
-    Given Rastgele seçilen bir kart için güncelleme isteği hazırlanır
-    When Kart güncelleme isteği gönderilir
-    Then Kart başarıyla güncellenir
+  @Deneme
+  Scenario: Update one randomly selected card
+    Given A randomly selected card is updated successfully
 
-  Scenario: Oluşturulan kartları sil
-    Given Silinecek kartlar için DELETE isteği hazırlanır
-    When Kartlar için silme isteği gönderilir
-    Then Kartlar başarıyla silinir
+  @Deneme
+  Scenario: Delete created cards
+    Given All created cards are deleted successfully
 
-  Scenario: Oluşturulan board'u sil
-    Given Silinecek board için DELETE isteği hazırlanır
-    When Board silme isteği gönderilir
-    Then Board başarıyla silinir
+  @Deneme
+  Scenario: Delete the created board
+    Given The created board is deleted successfully

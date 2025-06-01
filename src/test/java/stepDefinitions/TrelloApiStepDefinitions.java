@@ -25,15 +25,10 @@ public class TrelloApiStepDefinitions {
     private List<String> cardIds = new ArrayList<>();
     private Random random = new Random();
     private Gson gson = new Gson();
-    private ObjectMapper objectMapper = new ObjectMapper();
 
-    @Given("Trello API için board oluşturma isteği hazırlanır")
-    public void prepareBoardCreationRequest() {
+    @Given("The board creation request is prepared and sent successfully")
+    public void theBoardCreationRequestIsPreparedAndSentSuccessfully() {
         RestAssured.baseURI = baseUrl;
-    }
-
-    @When("Board oluşturma isteği gönderilir")
-    public void sendBoardCreationRequest() {
         Board board = new Board();
         board.setName("Test Board " + System.currentTimeMillis());
         board.setDesc("Created by Rest-Assured and POJO");
@@ -48,65 +43,50 @@ public class TrelloApiStepDefinitions {
         response.then().statusCode(200);
         boardId = response.jsonPath().getString("id");
         System.out.println("Board ID: " + boardId);
-    }
-
-    @Then("Board başarıyla oluşturulur ve board ID kaydedilir")
-    public void verifyBoardCreated() {
         assert boardId != null;
     }
 
-    @Given("Trello board ID ile kart oluşturma isteği hazırlanır")
-    public void prepareCardCreationRequest() {
+
+    @Given("Two cards are created successfully on the board")
+    public void twoCardsAreCreatedSuccessfullyOnTheBoard() {
         RestAssured.baseURI = baseUrl;
-    }
+        Card cardFirst = new Card();
+        cardFirst.setName("First Card");
+        cardFirst.setDesc("Created by Rest-Assured");
 
-    @When("Birinci kart için POST isteği gönderilir")
-    public void sendFirstCardCreationRequest() {
-        Card card = new Card();
-        card.setName("First Card");
-        card.setDesc("Created by Rest-Assured");
-
-        Response response = given()
+        Response responseFirstCard = given()
                 .queryParam("key", apiKey)
                 .queryParam("token", token)
                 .queryParam("idList", getFirstListId(boardId))
                 .contentType("application/json")
-                .body(gson.toJson(card))
+                .body(gson.toJson(cardFirst))
                 .post("/cards");
 
-        response.then().statusCode(200);
-        String cardId = response.jsonPath().getString("id");
-        cardIds.add(cardId);
-        System.out.println("First Card ID: " + cardId);
-    }
+        responseFirstCard.then().statusCode(200);
+        String cardIdFirst = responseFirstCard.jsonPath().getString("id");
+        cardIds.add(cardIdFirst);
+        System.out.println("First Card ID: " + cardIdFirst);
 
-    @When("İkinci kart için POST isteği gönderilir")
-    public void sendSecondCardCreationRequest() {
-        Card card = new Card();
-        card.setName("Second Card");
-        card.setDesc("Created by Rest-Assured");
+        Card cardSecond = new Card();
+        cardSecond.setName("Second Card");
+        cardSecond.setDesc("Created by Rest-Assured");
 
-        Response response = given()
+        Response responseSecondCard = given()
                 .queryParam("key", apiKey)
                 .queryParam("token", token)
                 .queryParam("idList", getFirstListId(boardId))
                 .contentType("application/json")
-                .body(gson.toJson(card))
+                .body(gson.toJson(cardSecond))
                 .post("/cards");
 
-        response.then().statusCode(200);
-        String cardId = response.jsonPath().getString("id");
-        cardIds.add(cardId);
-        System.out.println("Second Card ID: " + cardId);
+        responseSecondCard.then().statusCode(200);
+        String cardIdSecond = responseSecondCard.jsonPath().getString("id");
+        cardIds.add(cardIdSecond);
+        System.out.println("Second Card ID: " + cardIdSecond);
     }
 
-    @Given("Rastgele seçilen bir kart için güncelleme isteği hazırlanır")
-    public void prepareCardUpdateRequest() {
-        RestAssured.baseURI = baseUrl;
-    }
-
-    @When("Kart güncelleme isteği gönderilir")
-    public void sendCardUpdateRequest() {
+    @Given("A randomly selected card is updated successfully")
+    public void aRandomlySelectedCardIsUpdatedSuccessfully() {
         if (cardIds.isEmpty()) {
             throw new RuntimeException("No cards to update");
         }
@@ -127,13 +107,9 @@ public class TrelloApiStepDefinitions {
         System.out.println("Updated Card ID: " + cardId);
     }
 
-    @Given("Silinecek kartlar için DELETE isteği hazırlanır")
-    public void prepareCardDeleteRequest() {
+    @Given("All created cards are deleted successfully")
+    public void allCreatedCardsAreDeletedSuccessfully() {
         RestAssured.baseURI = baseUrl;
-    }
-
-    @When("Kartlar için silme isteği gönderilir")
-    public void sendCardDeleteRequests() {
         for (String cardId : cardIds) {
             given()
                     .queryParam("key", apiKey)
@@ -145,13 +121,9 @@ public class TrelloApiStepDefinitions {
         }
     }
 
-    @Given("Silinecek board için DELETE isteği hazırlanır")
-    public void prepareBoardDeleteRequest() {
+    @Given("The created board is deleted successfully")
+    public void theCreatedBoardIsDeletedSuccessfully() {
         RestAssured.baseURI = baseUrl;
-    }
-
-    @When("Board silme isteği gönderilir")
-    public void sendBoardDeleteRequest() {
         given()
                 .queryParam("key", apiKey)
                 .queryParam("token", token)
@@ -170,4 +142,7 @@ public class TrelloApiStepDefinitions {
         response.then().statusCode(200);
         return response.jsonPath().getString("id[0]");
     }
+
+
+
 }
