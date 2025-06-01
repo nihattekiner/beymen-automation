@@ -27,6 +27,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.List;
 
 
 public class CareersStepDefinitions extends BaseSteps {
@@ -109,25 +110,77 @@ public class CareersStepDefinitions extends BaseSteps {
                 ProductPage.CHOOSE_SIZE_XLARGE
         };
 
-        boolean sizeSelected = false;
+        boolean productAdded  = false;
 
         for (BaseElement size : sizes) {
             try {
-                wait.until(ExpectedConditions.elementToBeClickable(size.getLocator()));
-                driver.findElement(size.getLocator()).click();
-                //System.out.println("Chosen Size: " + size.getLocator().toString());
-                sizeSelected = true;
-                break;
+                // Bedeni tıklama
+                WebElement sizeElement = driver.findElement(size.getLocator());
+                wait.until(ExpectedConditions.elementToBeClickable(sizeElement));
+                sizeElement.click();
+                System.out.println("Tıklanan beden: " + size.getLocator());
+
+                // Sepete ekleme
+                baseSteps.clickElement(ProductPage.ADD_CART.getLocator());
+                System.out.println("Sepete ekleme tıklandı.");
+
+                // Sepete git (ör: sepete git butonunun locator'ı)
+                baseSteps.clickElement(ProductPage.CART_BUTTON.getLocator());
+                System.out.println("Sepete gidildi.");
+
+                // Sepette boş yazısını kontrol et
+                Thread.sleep(2000); // Sepet yüklenmesini beklemek için, wait kullanabilirsin
+                List<WebElement> emptyCartElements = driver.findElements(By.xpath("//strong[contains(text(),'Sepetinizde Ürün Bulunmamaktadır')]"));
+                if (emptyCartElements.isEmpty()) {
+                    // Ürün var, döngüyü kır
+                    System.out.println("Sepette ürün var.");
+                    productAdded = true;
+                    break;
+                } else {
+                    // Sepet boş, geri git (ör: tarayıcı geri)
+                    driver.navigate().back();  // veya baseSteps.goBack(); varsa onu kullan
+                    System.out.println("Sepet boş, geri dönüldü.");
+                }
             } catch (Exception e) {
-                System.out.println("No clickable locator: " + size.getLocator().toString());
+                System.out.println("Hata oluştu: " + e.getMessage());
+                driver.navigate().back(); // Hata olursa geri dön
             }
         }
 
-        if (!sizeSelected) {
-            System.out.println("No size could be chosen!");
+        if (!productAdded) {
+            System.out.println("Hiçbir beden eklenemedi.");
+        } else {
+            System.out.println("Başarılı şekilde ürün sepete eklendi.");
+            // Buradan sonra diğer adımlara geçebilirsin
+
+        /*
+        for (BaseElement size : sizes) {
+            try {
+                wait.until(ExpectedConditions.presenceOfElementLocated(size.getLocator()));
+                WebElement sizeElement = driver.findElement(size.getLocator());
+                if (sizeElement.isDisplayed() && sizeElement.isEnabled()) {
+                    sizeElement.click();
+                    //System.out.println("Seçilen beden: " + size.getLocator().toString());
+                    sizeSelected = true;
+                    break;
+                } else {
+                    System.out.println("Beden bulunuyor ama tıklanamaz: " + size.getLocator().toString());
+                }
+            } catch (Exception e) {
+                System.out.println("Beden bulunamadı: " + size.getLocator().toString());
+            }
         }
-        baseSteps.waitByMilliSeconds(2000);
-        baseSteps.clickElement(ProductPage.ADD_CART.getLocator());
+
+        if (sizeSelected) {
+            baseSteps.waitByMilliSeconds(2000);
+            baseSteps.clickElement(ProductPage.ADD_CART.getLocator());
+        } else {
+            System.out.println("Sepete eklenemedi, uygun beden bulunamadı.");
+        }
+
+         */
+
+        }
     }
 
     @Then("the product price on the product page should match the price in the cart")
@@ -182,15 +235,35 @@ public class CareersStepDefinitions extends BaseSteps {
     public void theProductQuantityIsIncreasedTo(int quantity) {
         quantityDropdown = driver.findElement(CartPage.PRODUCT_QUANTITY.getLocator());
         selectQuantity = new Select(quantityDropdown);
-        selectQuantity.selectByIndex(quantity-1);
+        int availableOptions = selectQuantity.getOptions().size();
+        System.out.println("Sepetteki mevcut adet seçenekleri: " + availableOptions);
+
+        if (quantity <= availableOptions) {
+            selectQuantity.selectByIndex(quantity - 1);
+            System.out.println("Adet " + quantity + " olarak seçildi.");
+        } else {
+            System.out.println("İstenilen adet (" + quantity + ") mevcut değil. Mevcut adet: " + availableOptions +
+                    ". Adet artırılamadı, işlem mevcut adet ile devam ediyor.");
+        }
+        //selectQuantity = new Select(quantityDropdown);
+        //selectQuantity.selectByIndex(quantity-1);
     }
 
     @Then("the product quantity should be {int} in the cart")
     public void theProductQuantityShouldBeInTheCart(int quantity) {
-        selectQuantity = new Select(quantityDropdown);
-        String quantityDropdownString = selectQuantity.getFirstSelectedOption().getText();
-        quantityString = "2 adet";
-        Assert.assertEquals(quantityString,quantityDropdownString);
+
+        WebElement updatedQuantityDropdown = driver.findElement(CartPage.PRODUCT_QUANTITY.getLocator());
+        Select updatedSelectQuantity = new Select(updatedQuantityDropdown);
+        String quantityDropdownString = updatedSelectQuantity.getFirstSelectedOption().getText();
+        String quantityString = quantity + " adet"; // Beklenen değeri dinamik yap
+        Assert.assertEquals(quantityString, quantityDropdownString);
+
+        //quantityDropdown = driver.findElement(CartPage.PRODUCT_QUANTITY.getLocator());
+        //selectQuantity = new Select(quantityDropdown);
+        //baseSteps.waitByMilliSeconds(2000);
+        //String quantityDropdownString = selectQuantity.getFirstSelectedOption().getText();
+        //quantityString = "2 adet";
+        //Assert.assertEquals(quantityString,quantityDropdownString);
     }
 
     @When("the product is removed from the cart")
