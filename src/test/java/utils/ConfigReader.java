@@ -16,6 +16,7 @@ public class ConfigReader {
             inputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
+            throw new RuntimeException("Config.properties file not found or cannot be loaded!");
         }
     }
 
